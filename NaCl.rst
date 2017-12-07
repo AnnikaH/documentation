@@ -24,7 +24,7 @@ Datatypes that exist in NaCl behind the scenes are:
 Typed objects
 ~~~~~~~~~~~~~
 
-A typed object initialization has the following structure: <type> <name> <value>, where the type can be Iface, Gateway, Conntrack or Vlan.
+A typed object initialization has the following structure: <type> <name> <value>, where the type can be Iface, Gateway, Conntrack, Vlan or Load_balancer.
 
 Iface
 -----
@@ -325,6 +325,87 @@ More than one Vlan can be added to an Iface’s vlan:
 			}
 		]
 	}
+
+Load_balancer
+-------------
+
+You can add a TCP Load_balancer to your service as well.
+
+The following properties can be specified for a Load_balancer object:
+
+	- layer (only tcp is possible for now)
+	- clients, an object containing the following key value pairs:
+		- iface (name of an Iface)
+		- port (integer)
+		- wait_queue_limit (integer)
+		- session_limit (integer)
+	- servers, an object containing the following key value pairs:
+		- iface (name of an Iface)
+		- algorithm (only round_robin is possible for now)
+		- pool (a list of objects containing the properties address (IPv4 address) and port (integer))
+
+::
+
+	Load_balancer lb {
+	    layer: tcp,
+	    clients: {
+	        iface: outside,
+	        port: 80,
+	        wait_queue_limit: 1000,
+	        session_limit: 1000
+	    },
+	    servers: {
+	        iface: inside,
+	        algorithm: round_robin,
+	        pool: [
+	            {
+	                address: 10.20.17.81,
+	                port: 80
+	            },
+	            {
+	                address: 10.20.17.82,
+	                port: 80
+	            }
+	        ]
+	    }
+	}
+
+This is also possible:
+
+::
+
+	Load_balancer lb {
+	    servers: {
+	        algorithm: round_robin,
+	        pool: node_pool
+	    }
+	}
+
+	lb.layer: tcp
+
+	lb.clients: {
+	    iface: outside,
+	    port: 80,
+	    wait_queue_limit: 1000,
+	    session_limit: 1000
+	}
+
+	lb.servers.iface: inside
+
+	my_first_node: {
+	    address: 10.20.17.81,
+	    port: 80
+	}
+
+	my_second_node: {
+	    address: 10.20.17.82,
+	    port: 80
+	}
+
+	node_pool: [
+	    my_first_node,
+	    my_second_node
+	]
 
 Untyped objects
 ~~~~~~~~~~~~~~~

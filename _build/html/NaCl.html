@@ -72,7 +72,7 @@
 </div>
 <div class="section" id="typed-objects">
 <h2>Typed objects<a class="headerlink" href="#typed-objects" title="Permalink to this headline">¶</a></h2>
-<p>A typed object initialization has the following structure: &lt;type&gt; &lt;name&gt; &lt;value&gt;, where the type can be Iface, Gateway, Conntrack or Vlan.</p>
+<p>A typed object initialization has the following structure: &lt;type&gt; &lt;name&gt; &lt;value&gt;, where the type can be Iface, Gateway, Conntrack, Vlan or Load_balancer.</p>
 <div class="section" id="iface">
 <h3>Iface<a class="headerlink" href="#iface" title="Permalink to this headline">¶</a></h3>
 <p>An Iface is a type that has certain requirements. The following property must be specified for each Iface created:</p>
@@ -344,6 +344,97 @@
                 <span class="p">}</span>
         <span class="p">]</span>
 <span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-balancer">
+<h3>Load_balancer<a class="headerlink" href="#load-balancer" title="Permalink to this headline">¶</a></h3>
+<p>You can add a TCP Load_balancer to your service as well.</p>
+<p>The following properties can be specified for a Load_balancer object:</p>
+<blockquote>
+<div><ul class="simple">
+<li>layer (only tcp is possible for now)</li>
+<li><dl class="first docutils">
+<dt>clients, an object containing the following key value pairs:</dt>
+<dd><ul class="first last">
+<li>iface (name of an Iface)</li>
+<li>port (integer)</li>
+<li>wait_queue_limit (integer)</li>
+<li>session_limit (integer)</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>servers, an object containing the following key value pairs:</dt>
+<dd><ul class="first last">
+<li>iface (name of an Iface)</li>
+<li>algorithm (only round_robin is possible for now)</li>
+<li>pool (a list of objects containing the properties address (IPv4 address) and port (integer))</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Load_balancer</span> <span class="n">lb</span> <span class="p">{</span>
+    <span class="n">layer</span><span class="p">:</span> <span class="n">tcp</span><span class="p">,</span>
+    <span class="n">clients</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">iface</span><span class="p">:</span> <span class="n">outside</span><span class="p">,</span>
+        <span class="n">port</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
+        <span class="n">wait_queue_limit</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">session_limit</span><span class="p">:</span> <span class="mi">1000</span>
+    <span class="p">},</span>
+    <span class="n">servers</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">iface</span><span class="p">:</span> <span class="n">inside</span><span class="p">,</span>
+        <span class="n">algorithm</span><span class="p">:</span> <span class="n">round_robin</span><span class="p">,</span>
+        <span class="n">pool</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+                <span class="n">address</span><span class="p">:</span> <span class="mf">10.20</span><span class="o">.</span><span class="mf">17.81</span><span class="p">,</span>
+                <span class="n">port</span><span class="p">:</span> <span class="mi">80</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+                <span class="n">address</span><span class="p">:</span> <span class="mf">10.20</span><span class="o">.</span><span class="mf">17.82</span><span class="p">,</span>
+                <span class="n">port</span><span class="p">:</span> <span class="mi">80</span>
+            <span class="p">}</span>
+        <span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This is also possible:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Load_balancer</span> <span class="n">lb</span> <span class="p">{</span>
+    <span class="n">servers</span><span class="p">:</span> <span class="p">{</span>
+        <span class="n">algorithm</span><span class="p">:</span> <span class="n">round_robin</span><span class="p">,</span>
+        <span class="n">pool</span><span class="p">:</span> <span class="n">node_pool</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">lb</span><span class="o">.</span><span class="n">layer</span><span class="p">:</span> <span class="n">tcp</span>
+
+<span class="n">lb</span><span class="o">.</span><span class="n">clients</span><span class="p">:</span> <span class="p">{</span>
+    <span class="n">iface</span><span class="p">:</span> <span class="n">outside</span><span class="p">,</span>
+    <span class="n">port</span><span class="p">:</span> <span class="mi">80</span><span class="p">,</span>
+    <span class="n">wait_queue_limit</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="n">session_limit</span><span class="p">:</span> <span class="mi">1000</span>
+<span class="p">}</span>
+
+<span class="n">lb</span><span class="o">.</span><span class="n">servers</span><span class="o">.</span><span class="n">iface</span><span class="p">:</span> <span class="n">inside</span>
+
+<span class="n">my_first_node</span><span class="p">:</span> <span class="p">{</span>
+    <span class="n">address</span><span class="p">:</span> <span class="mf">10.20</span><span class="o">.</span><span class="mf">17.81</span><span class="p">,</span>
+    <span class="n">port</span><span class="p">:</span> <span class="mi">80</span>
+<span class="p">}</span>
+
+<span class="n">my_second_node</span><span class="p">:</span> <span class="p">{</span>
+    <span class="n">address</span><span class="p">:</span> <span class="mf">10.20</span><span class="o">.</span><span class="mf">17.82</span><span class="p">,</span>
+    <span class="n">port</span><span class="p">:</span> <span class="mi">80</span>
+<span class="p">}</span>
+
+<span class="n">node_pool</span><span class="p">:</span> <span class="p">[</span>
+    <span class="n">my_first_node</span><span class="p">,</span>
+    <span class="n">my_second_node</span>
+<span class="p">]</span>
 </pre></div>
 </div>
 </div>
@@ -639,6 +730,7 @@
 <li><a class="reference internal" href="#gateway">Gateway</a></li>
 <li><a class="reference internal" href="#conntrack">Conntrack</a></li>
 <li><a class="reference internal" href="#vlan">Vlan</a></li>
+<li><a class="reference internal" href="#load-balancer">Load_balancer</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#untyped-objects">Untyped objects</a></li>
